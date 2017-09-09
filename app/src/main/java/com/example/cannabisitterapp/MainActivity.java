@@ -3,6 +3,8 @@ package com.example.cannabisitterapp;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,7 +56,7 @@ import com.squareup.okhttp.OkHttpClient;
 import static com.microsoft.windowsazure.mobileservices.table.query.QueryOperations.*;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     public static int DUMMY_USERID = 1;
 
@@ -66,25 +68,23 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mAddPlantBtn.setOnClickListener( new View.OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), AddPlantActivity.class);
-                startActivity(intent);
-                finish();
-                overridePendingTransition(R.anim.push_left_in, R.anim.push_left_out);
-            }
-        });
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
-
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
+        //todo - uncomment this to enable login/sign-up!!!
+//        Intent intent = new Intent(this, LoginActivity.class);
+//        startActivity(intent);
 
         // Login ended!
 
 
+    }
+
+    public void addPlant(View view) {
+        Intent intent = new Intent(this, AddPlantActivity.class);
+        startActivity(intent);
+        //finish();
+        overridePendingTransition(R.anim.push_left_in, R.anim.push_left_out);
     }
 
 //    @Override

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -78,6 +79,7 @@ public class AddPlantActivity extends AppCompatActivity {
                 startActivityForResult(intent, BARCODE_READER_REQUEST_CODE);
             }
         });
+
     }
 
     @Override
@@ -91,6 +93,7 @@ public class AddPlantActivity extends AppCompatActivity {
                     if (tryParseInt(plantIdStr)){
                         int plantId = Integer.parseInt(plantIdStr);
                         mResultTextView.setText("HIP HIP HOORAY!");
+                        //todo - continue form here!!!
 
                     } else {
                         mResultTextView.setText(R.string.invalid_qr_code);
