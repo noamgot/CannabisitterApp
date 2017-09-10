@@ -18,16 +18,39 @@
         android:layout_marginTop="16dp"
         android:src="@drawable/logo"/>
 
+    <ListView
+        android:id="@+id/plantsList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView"
+        android:layout_above="@+id/add_plant_btn"
+        android:layout_marginTop="16dp"
+        tools:listitem="@layout/row_list_plant_item"
+        android:padding="6dip"
+        android:divider="@color/primary_dark"
+        android:dividerHeight="1dp">
+    </ListView>
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
+
     <Button
         android:id="@+id/add_plant_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="16dp"
         android:background="@color/primary_dark"
         android:onClick="addPlant"
         android:text="Add Plant"
-        android:textColor="@color/white"/>
+        android:textColor="@color/white"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"/>
+
 
 </RelativeLayout>

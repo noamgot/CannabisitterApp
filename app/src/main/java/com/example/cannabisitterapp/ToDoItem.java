@@ -20,7 +20,7 @@ public class ToDoItem {
     /**
      * Indicates if the item is completed
      */
-    @com.google.gson.annotations.SerializedName("completeKKK")
+    @com.google.gson.annotations.SerializedName("complete")
     private boolean mComplete;
 
     /**
