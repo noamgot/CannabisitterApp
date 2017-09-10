@@ -6,6 +6,7 @@ package com.example.cannabisitterapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,16 +58,6 @@ public class PlantTableItemAdapter extends ArrayAdapter<PlantTableItem> {
         if (currentItem != null) {
             textView.setText(currentItem.getName());
         }
-
-
-//        textView.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View arg0) {
-//                //todo - move to plant stats
-//
-//            }
-//        });
 
         return row;
     }

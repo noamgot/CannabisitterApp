@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.cannabisitterapp.PlantStatsActivity">
+
+
+    <TextView
+        android:id="@+id/plantNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="TextView"
+        android:textColor="@color/black"
+        android:textSize="30sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/lastIrrigationTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/last_irrigation"
+        android:textSize="24sp"
+        app:layout_constraintTop_toBottomOf="@+id/plantNameTextView"
+        android:layout_marginLeft="24dp"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <TextView
+        android:id="@+id/soilMoistureTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="Soil Moisture"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lastIrrigationTextView"/>
+
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:id="@+id/soilMoistureGraph"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/soilMoistureTextView"
+        android:layout_marginLeft="24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="24dp"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <TextView
+        android:id="@+id/temperatureTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="Temperature"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/soilMoistureGraph"/>
+
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:id="@+id/temperatureGraph"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/temperatureTextView"
+        android:layout_marginLeft="24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="24dp"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+
+</android.support.constraint.ConstraintLayout>
+ </ScrollView>

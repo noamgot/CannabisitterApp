@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +20,6 @@ import java.util.concurrent.TimeUnit;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.widget.HeaderViewListAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -49,6 +46,7 @@ import com.squareup.okhttp.OkHttpClient;
 public class MainActivity extends AppCompatActivity {
 
     public static int DUMMY_USERID = 1;
+    public static final String PLANT_NAME_KEY = "com.example.cannabisitterapp.PLANT_NAME_KEY";
     private ProgressBar mSpinner;
 
     /**
@@ -117,12 +115,22 @@ public class MainActivity extends AppCompatActivity {
 
             //mTextNewToDo = (EditText) findViewById(R.id.textNewToDo);
 
-            mSpinner = (ProgressBar)findViewById(R.id.progressBar1);
+            mSpinner = (ProgressBar)findViewById(R.id.spinnerProgressBar);
 
 
             // Create an mAdapter to bind the items with the view
             mAdapter = new PlantTableItemAdapter(this, R.layout.row_list_plant_item);
             ListView listViewPlantItem = (ListView) findViewById(R.id.plantsList);
+            listViewPlantItem.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    PlantTableItem item = (PlantTableItem) parent.getAdapter().getItem(position);
+                    String plantName = item.getName();
+                    Intent intent = new Intent(getApplicationContext(), PlantStatsActivity.class);
+                    intent.putExtra(PLANT_NAME_KEY, plantName);
+                    startActivity(intent);
+                }
+            });
             listViewPlantItem.setAdapter(mAdapter);
 
 //            if (mListView == null) {
@@ -168,9 +176,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         refreshItemsFromTable();
-
     }
 
     /**
@@ -222,25 +228,6 @@ public class MainActivity extends AppCompatActivity {
         return mPlantsTable.execute().get();
     }
 
-//    protected ListView getListView() {
-//        if (mListView == null) {
-//            mListView = (ListView) findViewById(R.id.plantsList);
-//        }
-//        return mListView;
-//    }
-//
-//    protected void setListAdapter(ListAdapter adapter) {
-//        getListView().setAdapter(adapter);
-//    }
-//
-//    protected ListAdapter getListAdapter() {
-//        ListAdapter adapter = getListView().getAdapter();
-//        if (adapter instanceof HeaderViewListAdapter) {
-//            return ((HeaderViewListAdapter)adapter).getWrappedAdapter();
-//        } else {
-//            return adapter;
-//        }
-//    }
 
     public void addPlant(View view) {
 

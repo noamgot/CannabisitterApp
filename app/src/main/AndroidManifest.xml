@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:app="http://schemas.android.com/apk/res-auto"
           package="com.example.cannabisitterapp"
@@ -6,65 +7,69 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="18"/>
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA" />
-
-
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
 
-
-
-        <!--<activity android:name="ToDoActivity"-->
-            <!--android:label="@string/app_name">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
-        <!--</activity>-->
+        <!-- <activity android:name="ToDoActivity" -->
+        <!-- android:label="@string/app_name"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
 
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.Dark">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/AppTheme.Dark" />
+            android:theme="@style/AppTheme.Dark"/>
         <activity
             android:name=".SignupActivity"
-            android:theme="@style/AppTheme.Dark" />
+            android:theme="@style/AppTheme.Dark"/>
         <activity
             android:name=".AddPlantActivity"
-            android:theme="@style/AppTheme.Dark"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.Dark">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
+                android:value=".MainActivity"/>
         </activity>
         <activity
             android:name=".barcode.BarcodeCaptureActivity"
-            android:theme="@style/AppTheme.Dark"
-            android:parentActivityName=".AddPlantActivity">
+            android:parentActivityName=".AddPlantActivity"
+            android:theme="@style/AppTheme.Dark">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".AddPlantActivity" />
+                android:value=".AddPlantActivity"/>
+        </activity>
+        <activity
+            android:name=".PlantStatsActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.Dark">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+
         </activity>
     </application>
-
-
-
-
 
 </manifest>
