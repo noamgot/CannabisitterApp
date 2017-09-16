@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String PLANT_NAME_KEY = "com.example.cannabisitterapp.PLANT_NAME_KEY";
     private ProgressBar mSpinner;
 
+    private int mUserId = DUMMY_USERID;
+
     /**
      * Mobile Service Client reference
      */
@@ -57,24 +59,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Mobile Service Table used to access data
      */
-    private MobileServiceTable<PlantTableItem> mPlantsTable;
+    private MobileServiceTable<PlantsPerUserItem> mPlantsPerUserTable;
 
     /**
      * Adapter to sync the items list with the view
      */
-    private PlantTableItemAdapter mAdapter;
-
-//    //LIST OF ARRAY STRINGS WHICH WILL SERVE AS LIST ITEMS
-//    ArrayList<PlantTableItem> mPlantsList =new ArrayList<PlantTableItem>();
-//
-//    //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
-//    ArrayAdapter<PlantTableItem> mAdapter;
-//
-//    //RECORDING HOW MANY TIMES THE BUTTON HAS BEEN CLICKED
-//    int clickCounter=0;
-//
-//    private ListView mListView;
-
+    private PlantsPerUserItemAdapter mAdapter;
 
     @Bind(R.id.add_plant_btn) Button mAddPlantBtn;
 
@@ -89,9 +79,12 @@ public class MainActivity extends AppCompatActivity {
             // Create the Mobile Service Client instance, using the provided
 
             // Mobile Service URL and key
-            mClient = new MobileServiceClient(
-                    "https://cannabisitterapp.azurewebsites.net",
-                    this).withFilter(new ProgressFilter());
+            AzureServiceAdapter.Initialize(this);
+            AzureServiceAdapter azureServiceAdapter = AzureServiceAdapter.getInstance();
+            mClient = azureServiceAdapter.getClient();
+//            mClient = new MobileServiceClient(
+//                    "https://cannabisitterapp.azurewebsites.net",
+//                    this);//.withFilter(new ProgressFilter());
 
             // Extend timeout from default of 10s to 20s
             mClient.setAndroidHttpClientFactory(new OkHttpClientFactory() {
@@ -105,27 +98,27 @@ public class MainActivity extends AppCompatActivity {
             });
 
             // Get the Mobile Service Table instance to use
-            mPlantsTable = mClient.getTable(PlantTableItem.class);
+            mPlantsPerUserTable = mClient.getTable("GHPlantsPerUser", PlantsPerUserItem.class);
 
             // Offline Sync
             //mToDoTable = mClient.getSyncTable("ToDoItem", ToDoItem.class);
 
             //Init local storage
-            initLocalStore().get();
+           // initLocalStore().get();
 
             //mTextNewToDo = (EditText) findViewById(R.id.textNewToDo);
 
             mSpinner = (ProgressBar)findViewById(R.id.spinnerProgressBar);
 
-
             // Create an mAdapter to bind the items with the view
-            mAdapter = new PlantTableItemAdapter(this, R.layout.row_list_plant_item);
+            mAdapter = new PlantsPerUserItemAdapter(this, R.layout.row_list_plant_item);
             ListView listViewPlantItem = (ListView) findViewById(R.id.plantsList);
             listViewPlantItem.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    PlantTableItem item = (PlantTableItem) parent.getAdapter().getItem(position);
-                    String plantName = item.getName();
+                    PlantsPerUserItem item = (PlantsPerUserItem) parent.getAdapter().getItem(position);
+                    // todo - fix this so it will pass a name and not a number!
+                    String plantName = Integer.toString(item.getPlantId());
                     Intent intent = new Intent(getApplicationContext(), PlantStatsActivity.class);
                     intent.putExtra(PLANT_NAME_KEY, plantName);
                     startActivity(intent);
@@ -192,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
             protected Void doInBackground(Void... params) {
 
                 try {
-                    final List<PlantTableItem> results = refreshItemsFromMobileServiceTable();
+                    final List<PlantsPerUserItem> results = refreshItemsFromMobileServiceTable();
 
                     //Offline Sync
                     //final List<ToDoItem> results = refreshItemsFromMobileServiceTableSyncTable();
@@ -202,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             mAdapter.clear();
 
-                            for (PlantTableItem item : results) {
+                            for (PlantsPerUserItem item : results) {
                                 mAdapter.add(item);
                             }
                         }
@@ -224,8 +217,8 @@ public class MainActivity extends AppCompatActivity {
         runAsyncTask(task);
     }
 
-    private List<PlantTableItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException, MobileServiceException {
-        return mPlantsTable.execute().get();
+    private List<PlantsPerUserItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException, MobileServiceException {
+       return mPlantsPerUserTable.where().field("UserID").eq(mUserId).execute().get();
     }
 
 
@@ -312,41 +305,41 @@ public class MainActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    private AsyncTask<Void, Void, Void> initLocalStore() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
-
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                try {
-
-                    MobileServiceSyncContext syncContext = mClient.getSyncContext();
-
-                    if (syncContext.isInitialized())
-                        return null;
-
-                    SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
-
-                    Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
-                    tableDefinition.put("id", ColumnDataType.String);
-                    tableDefinition.put("plantId", ColumnDataType.Integer);
-                    tableDefinition.put("name", ColumnDataType.String);
-
-                    localStore.defineTable("PlantTableItem", tableDefinition);
-
-                    SimpleSyncHandler handler = new SimpleSyncHandler();
-
-                    syncContext.initialize(localStore, handler).get();
-
-                } catch (final Exception e) {
-                    createAndShowDialogFromTask(e, "Error");
-                }
-
-                return null;
-            }
-        };
-
-        return runAsyncTask(task);
-    }
+//    private AsyncTask<Void, Void, Void> initLocalStore() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
+//
+//        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+//            @Override
+//            protected Void doInBackground(Void... params) {
+//                try {
+//
+//                    MobileServiceSyncContext syncContext = mClient.getSyncContext();
+//
+//                    if (syncContext.isInitialized())
+//                        return null;
+//
+//                    SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
+//
+//                    Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
+//                    tableDefinition.put("id", ColumnDataType.String);
+//                    tableDefinition.put("plantId", ColumnDataType.Integer);
+//                    tableDefinition.put("name", ColumnDataType.String);
+//
+//                    localStore.defineTable("PlantTableItem", tableDefinition);
+//
+//                    SimpleSyncHandler handler = new SimpleSyncHandler();
+//
+//                    syncContext.initialize(localStore, handler).get();
+//
+//                } catch (final Exception e) {
+//                    createAndShowDialogFromTask(e, "Error");
+//                }
+//
+//                return null;
+//            }
+//        };
+//
+//        return runAsyncTask(task);
+//    }
 
     /**
      * Run an ASync task on the corresponding executor
@@ -370,45 +363,45 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private class ProgressFilter implements ServiceFilter {
-
-        @Override
-        public ListenableFuture<ServiceFilterResponse> handleRequest(ServiceFilterRequest request, NextServiceFilterCallback nextServiceFilterCallback) {
-
-            final SettableFuture<ServiceFilterResponse> resultFuture = SettableFuture.create();
-
-
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    //if (mProgressBar != null) mProgressBar.setVisibility(ProgressBar.VISIBLE);
-                }
-            });
-
-            ListenableFuture<ServiceFilterResponse> future = nextServiceFilterCallback.onNext(request);
-
-            Futures.addCallback(future, new FutureCallback<ServiceFilterResponse>() {
-                @Override
-                public void onFailure(Throwable e) {
-                    resultFuture.setException(e);
-                }
-
-                @Override
-                public void onSuccess(ServiceFilterResponse response) {
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            //if (mProgressBar != null) mProgressBar.setVisibility(ProgressBar.GONE);
-                        }
-                    });
-
-                    resultFuture.set(response);
-                }
-            });
-
-            return resultFuture;
-        }
-    }
+//    private class ProgressFilter implements ServiceFilter {
+//
+//        @Override
+//        public ListenableFuture<ServiceFilterResponse> handleRequest(ServiceFilterRequest request, NextServiceFilterCallback nextServiceFilterCallback) {
+//
+//            final SettableFuture<ServiceFilterResponse> resultFuture = SettableFuture.create();
+//
+//
+//            runOnUiThread(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    //if (mProgressBar != null) mProgressBar.setVisibility(ProgressBar.VISIBLE);
+//                }
+//            });
+//
+//            ListenableFuture<ServiceFilterResponse> future = nextServiceFilterCallback.onNext(request);
+//
+//            Futures.addCallback(future, new FutureCallback<ServiceFilterResponse>() {
+//                @Override
+//                public void onFailure(Throwable e) {
+//                    resultFuture.setException(e);
+//                }
+//
+//                @Override
+//                public void onSuccess(ServiceFilterResponse response) {
+//                    runOnUiThread(new Runnable() {
+//
+//                        @Override
+//                        public void run() {
+//                            //if (mProgressBar != null) mProgressBar.setVisibility(ProgressBar.GONE);
+//                        }
+//                    });
+//
+//                    resultFuture.set(response);
+//                }
+//            });
+//
+//            return resultFuture;
+//        }
+//    }
 }

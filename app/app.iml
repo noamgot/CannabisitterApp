@@ -103,21 +103,21 @@
     <orderEntry type="jdk" jdkName="Android API 25 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="butterknife-7.0.1" level="project" />
+    <orderEntry type="library" exported="" name="play-services-vision-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="okio-1.6.0" level="project" />
     <orderEntry type="library" exported="" name="constraint-layout-1.0.2" level="project" />
     <orderEntry type="library" exported="" name="okhttp-2.5.0" level="project" />
     <orderEntry type="library" exported="" name="transition-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="design-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="support-core-ui-25.3.1" level="project" />
-    <orderEntry type="library" exported="" name="play-services-vision-10.2.6" level="project" />
-    <orderEntry type="library" exported="" name="play-services-base-10.2.6" level="project" />
+    <orderEntry type="library" exported="" name="guava-20.0" level="project" />
+    <orderEntry type="library" exported="" name="play-services-basement-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="support-core-utils-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="support-fragment-25.3.1" level="project" />
-    <orderEntry type="library" exported="" name="guava-18.0" level="project" />
+    <orderEntry type="library" exported="" name="play-services-base-11.0.4" level="project" />
+    <orderEntry type="library" exported="" name="play-services-vision-common-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="constraint-layout-solver-1.0.2" level="project" />
-    <orderEntry type="library" exported="" name="gson-2.3" level="project" />
-    <orderEntry type="library" exported="" name="play-services-basement-10.2.6" level="project" />
-    <orderEntry type="library" exported="" name="play-services-tasks-10.2.6" level="project" />
+    <orderEntry type="library" exported="" name="gson-2.7" level="project" />
     <orderEntry type="library" exported="" name="azure-mobile-android-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="support-media-compat-25.3.1" level="project" />
@@ -131,6 +131,7 @@
     <orderEntry type="library" exported="" name="azure-notifications-handler-1.0.1" level="project" />
     <orderEntry type="library" exported="" name="support-compat-25.3.1" level="project" />
     <orderEntry type="library" exported="" name="animated-vector-drawable-25.3.1" level="project" />
+    <orderEntry type="library" exported="" name="play-services-tasks-11.0.4" level="project" />
     <orderEntry type="library" exported="" name="android-android-25" level="project" />
   </component>
 </module>
