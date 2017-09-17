@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,48 +16,18 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.example.cannabisitterapp.barcode.BarcodeCaptureActivity;
 
 
-import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
-import com.microsoft.windowsazure.mobileservices.http.NextServiceFilterCallback;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
-import com.microsoft.windowsazure.mobileservices.http.ServiceFilter;
-import com.microsoft.windowsazure.mobileservices.http.ServiceFilterRequest;
-import com.microsoft.windowsazure.mobileservices.http.ServiceFilterResponse;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
-import com.microsoft.windowsazure.mobileservices.table.query.Query;
-import com.microsoft.windowsazure.mobileservices.table.query.QueryOperations;
-import com.microsoft.windowsazure.mobileservices.table.sync.MobileServiceSyncContext;
-import com.microsoft.windowsazure.mobileservices.table.sync.MobileServiceSyncTable;
-import com.microsoft.windowsazure.mobileservices.table.sync.localstore.ColumnDataType;
-import com.microsoft.windowsazure.mobileservices.table.sync.localstore.MobileServiceLocalStoreException;
-import com.microsoft.windowsazure.mobileservices.table.sync.localstore.SQLiteLocalStore;
-import com.microsoft.windowsazure.mobileservices.table.sync.synchandler.SimpleSyncHandler;
 import com.squareup.okhttp.OkHttpClient;
-
-import static com.microsoft.windowsazure.mobileservices.table.query.QueryOperations.*;
 
 
 public class AddPlantActivity extends AppCompatActivity {
@@ -123,7 +92,6 @@ public class AddPlantActivity extends AppCompatActivity {
                     if (tryParseInt(plantIdStr)){
                         mPlantId = Integer.parseInt(plantIdStr);
                         addItem();
-                        //mResultTextView.setText("");
 
                     } else {
                         mResultTextView.setText(R.string.invalid_qr_code);
@@ -163,6 +131,8 @@ public class AddPlantActivity extends AppCompatActivity {
         item.setPlantId(mPlantId);
 
 
+
+
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -174,7 +144,12 @@ public class AddPlantActivity extends AppCompatActivity {
                             @Override
                             protected Void doInBackground(Void... params) {
                                 try {
-                                    addItemInTable(item);
+                                    if (plantIsInList()){
+                                      //  throw new Exception("The plant is already in your list. Please choose a different plant");
+
+                                    } else {
+                                        addItemInTable(item);
+                                    }
                                 } catch (final Exception e) {
                                     createAndShowDialogFromTask(e, "Error");
                                 }
@@ -202,13 +177,20 @@ public class AddPlantActivity extends AppCompatActivity {
 
     }
 
+    private boolean plantIsInList() throws ExecutionException, InterruptedException {
+        List<PlantsPerUserItem> lst = mPlantsPerUserTable.where().field("UserID").eq(mUserId).
+                and().field("PlantID").eq(mPlantId).execute().get();
+
+        return !lst.isEmpty();
+    }
+
     /**
      * Add an item to the Mobile Service Table
      *
      * @param item
      *            The item to Add
      */
-    public PlantsPerUserItem addItemInTable(PlantsPerUserItem item) throws ExecutionException, InterruptedException {
+    public PlantsPerUserItem addItemInTable(PlantsPerUserItem item) throws Exception {
         PlantsPerUserItem entity = mPlantsPerUserTable.insert(item).get();
         return entity;
     }
@@ -246,41 +228,7 @@ public class AddPlantActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-//    private AsyncTask<Void, Void, Void> initLocalStore() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
-//
-//        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-//            @Override
-//            protected Void doInBackground(Void... params) {
-//                try {
-//
-//                    MobileServiceSyncContext syncContext = mClient.getSyncContext();
-//
-//                    if (syncContext.isInitialized())
-//                        return null;
-//
-//                    SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
-//
-//                    Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
-//                    tableDefinition.put("id", ColumnDataType.String);
-//                    tableDefinition.put("plantId", ColumnDataType.Integer);
-//                    tableDefinition.put("name", ColumnDataType.String);
-//
-//                    localStore.defineTable("PlantTableItem", tableDefinition);
-//
-//                    SimpleSyncHandler handler = new SimpleSyncHandler();
-//
-//                    syncContext.initialize(localStore, handler).get();
-//
-//                } catch (final Exception e) {
-//                    createAndShowDialogFromTask(e, "Error");
-//                }
-//
-//                return null;
-//            }
-//        };
-//
-//        return runAsyncTask(task);
-//    }
+
 
     /**
      * Run an ASync task on the corresponding executor

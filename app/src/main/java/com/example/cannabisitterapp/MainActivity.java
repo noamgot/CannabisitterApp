@@ -310,6 +310,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void refreshPlantsList(View view) {
+        refreshItemsFromTable();
+    }
+
 //    private class ProgressFilter implements ServiceFilter {
 //
 //        @Override

@@ -76,6 +76,7 @@ public class PlantStatsActivity extends AppCompatActivity {
 
         mStatsTable = mClient.getTable("GHLogsPerUser", LogsPerUserItem.class);
 
+
         fillGraphs();
 
     }
@@ -97,6 +98,8 @@ public class PlantStatsActivity extends AppCompatActivity {
 
                             if(results.size() > 0) {
 
+                                DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT);
+
                                 DataPoint[] humidityMeasurements = new DataPoint[results.size()];
                                 DataPoint[] temperatureMeasurements = new DataPoint[results.size()];
                                 for (int i = 0; i < results.size(); i++) {
@@ -109,52 +112,10 @@ public class PlantStatsActivity extends AppCompatActivity {
                                 LineGraphSeries<DataPoint> temperatureSeries = new LineGraphSeries<DataPoint>(temperatureMeasurements);
 
                                 GraphView humidityGraph = (GraphView) findViewById(R.id.soilMoistureGraph);
-                                humidityGraph.getViewport().setScalable(true);
-                                humidityGraph.getGridLabelRenderer().setVerticalAxisTitleColor(Color.BLACK);
-                                humidityGraph.getGridLabelRenderer().setVerticalLabelsColor(Color.BLACK);
-                                humidityGraph.getGridLabelRenderer().setHorizontalAxisTitleColor(Color.BLACK);
-                                humidityGraph.getGridLabelRenderer().setHorizontalLabelsColor(Color.BLACK);
-
-                                humidityGraph.addSeries(humiditySeries);
-
-                                // set date label formatter
-                                humidityGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(PlantStatsActivity.this));
-                                humidityGraph.getGridLabelRenderer().setNumHorizontalLabels(3); // only 4 because of the space
-
-                                // set manual x bounds to have nice steps
-                                humidityGraph.getViewport().setMinX(results.get(0).getMessageDate().getTime());
-                                humidityGraph.getViewport().setMaxX(results.get(results.size() - 1).getMessageDate().getTime());
-                                humidityGraph.getViewport().setXAxisBoundsManual(true);
-
-                                humidityGraph.getViewport().setYAxisBoundsManual(true);
-                                humidityGraph.getViewport().setMinY(0);
-                                humidityGraph.getViewport().setMaxY(100);
-
-                                // as we use dates as labels, the human rounding to nice readable numbers
-                                // is not necessary
-                                //humidityGraph.getGridLabelRenderer().setHumanRounding(false);
-                                ///////////////////////////////////////
+                                setGraph(humidityGraph, humiditySeries, results);
 
                                 GraphView temperatureGraph = (GraphView) findViewById(R.id.temperatureGraph);
-                                temperatureGraph.getViewport().setScalable(true);
-                                temperatureGraph.getGridLabelRenderer().setVerticalAxisTitleColor(Color.BLACK);
-                                temperatureGraph.getGridLabelRenderer().setVerticalLabelsColor(Color.BLACK);
-                                temperatureGraph.getGridLabelRenderer().setHorizontalAxisTitleColor(Color.BLACK);
-                                temperatureGraph.getGridLabelRenderer().setHorizontalLabelsColor(Color.BLACK);
-
-                                temperatureGraph.addSeries(temperatureSeries);
-                                temperatureGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(PlantStatsActivity.this));
-                                temperatureGraph.getGridLabelRenderer().setNumHorizontalLabels(3); // only 4 because of the space
-
-                                // set manual x bounds to have nice steps
-                                temperatureGraph.getViewport().setMinX(results.get(0).getMessageDate().getTime());
-                                temperatureGraph.getViewport().setMaxX(results.get(results.size() - 1).getMessageDate().getTime());
-                                temperatureGraph.getViewport().setXAxisBoundsManual(true);
-                                //temperatureGraph.getGridLabelRenderer().setHumanRounding(false);
-
-                                temperatureGraph.getViewport().setYAxisBoundsManual(true);
-                                temperatureGraph.getViewport().setMinY(0);
-                                temperatureGraph.getViewport().setMaxY(50);
+                                setGraph(temperatureGraph, temperatureSeries, results);
                             }
 
                             // update last irrigation:
@@ -174,6 +135,40 @@ public class PlantStatsActivity extends AppCompatActivity {
 
         runAsyncTask(task);
     }
+
+    private void setGraph(GraphView graph, LineGraphSeries<DataPoint> series, List<LogsPerUserItem> results){
+
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT);
+        //graph.getViewport().setScalable(true);
+        //graph.getViewport().setScalableY(true);
+        //graph.getViewport().setScrollable(true);
+        //graph.getViewport().setScrollableY(true);
+        graph.getGridLabelRenderer().setVerticalAxisTitleColor(Color.BLACK);
+        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.BLACK);
+        graph.getGridLabelRenderer().setHorizontalAxisTitleColor(Color.BLACK);
+        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.BLACK);
+
+        graph.addSeries(series);
+
+        // set date label formatter
+        graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(PlantStatsActivity.this, df));
+        graph.getGridLabelRenderer().setNumHorizontalLabels(5); // only 4 because of the space
+
+        // set manual x bounds to have nice steps
+        graph.getViewport().setMinX(results.get(0).getMessageDate().getTime());
+        graph.getViewport().setMaxX(results.get(results.size() - 1).getMessageDate().getTime());
+        graph.getViewport().setXAxisBoundsManual(true);
+//
+//                                graph.getViewport().setYAxisBoundsManual(true);
+//                                graph.getViewport().setMinY(0);
+//                                graph.getViewport().setMaxY(5);
+
+        // as we use dates as labels, the human rounding to nice readable numbers
+        // is not necessary
+        //graph.getGridLabelRenderer().setHumanRounding(false);
+
+    }
+
 
     private String getLastIrrigationDate() throws ExecutionException, InterruptedException {
         List<LogsPerUserItem> lst =  mStatsTable.where().field("UserID").eq(mUserId).
@@ -199,12 +194,14 @@ public class PlantStatsActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
 
         cal.add(Calendar.DATE, -1);
-        Date before3Days = cal.getTime();
+        Date yestarday = cal.getTime();
         //DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
 
         List<LogsPerUserItem> lst =  mStatsTable.where().field("UserID").eq(mUserId).
                 and().field("PlantID").eq(mPlantId).
-                and().field("createdAt").ge(before3Days).
+                and().field("createdAt").ge(yestarday).
+                and().field("Humidity").le(1023).
+                and().field("Tempreture").lt(1000).
                 orderBy("createdAt", QueryOrder.Ascending).
                 execute().get();
         return lst;
