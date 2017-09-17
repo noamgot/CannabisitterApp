@@ -32,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/last_irrigation"
+        android:text=""
         android:textSize="24sp"
         app:layout_constraintTop_toBottomOf="@+id/plantNameTextView"
         android:layout_marginLeft="24dp"

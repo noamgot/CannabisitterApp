@@ -3,6 +3,7 @@ package com.example.cannabisitterapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
+import java.util.concurrent.ExecutionException;
+
+import static com.example.cannabisitterapp.MainActivity.getNameByPlantId;
 
 /**
  * Created by noamg on 17/09/2017.
@@ -52,10 +57,13 @@ public class PlantsPerUserItemAdapter extends ArrayAdapter<PlantsPerUserItem> {
         final TextView textView = (TextView) row.findViewById(R.id.plantText);
         if (currentItem != null) {
             textView.setText(String.valueOf(currentItem.getPlantId()));
+            textView.setText(MainActivity.getNameByPlantId(currentItem.getPlantId()));
         }
 
         return row;
     }
+
+
 
 }
 

@@ -15,15 +15,17 @@ public class PlantsPerUserItem  {
     @com.google.gson.annotations.SerializedName("UserID")
     private int mUserId;
 
-    @com.google.gson.annotations.SerializedName("UserPlantID")
-    private int mUserPlantId;
+//    @com.google.gson.annotations.SerializedName("UserPlantID")
+//    private int mUserPlantId;
+
+    public PlantsPerUserItem(){}
 
     public PlantsPerUserItem(String id, int plantId, int userId, int userPlantId) {
         //super(id);
         mId = id;
         mPlantId = plantId;
         mUserId = userId;
-        mUserPlantId = userPlantId;
+        //mUserPlantId = userPlantId;
     }
 
     public String getId() {
@@ -50,11 +52,16 @@ public class PlantsPerUserItem  {
         mUserId = userId;
     }
 
-    public int getUserPlantId() {
-        return mUserPlantId;
-    }
+//    public int getUserPlantId() {
+//        return mUserPlantId;
+//    }
+//
+//    public void setUserPlantId(int userPlantId) {
+//        mUserPlantId = userPlantId;
+//    }
 
-    public void setUserPlantId(int userPlantId) {
-        mUserPlantId = userPlantId;
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof PlantsPerUserItem && ((PlantsPerUserItem) o).mId == mId;
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.LruCache;
 
 import com.microsoft.windowsazure.mobileservices.*;
+import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
 
 import java.net.MalformedURLException;
 
@@ -17,13 +18,11 @@ public class AzureServiceAdapter {
     private MobileServiceClient mClient;
     private static AzureServiceAdapter mInstance = null;
 
-    public static LruCache<Integer, String> mUserIdCache;
-    private static final int LRU_CACHE_SIZE = 256;
+
 
     private AzureServiceAdapter(Context context) throws MalformedURLException {
         mContext = context;
         mClient = new MobileServiceClient(mMobileBackendUrl, mContext);
-        mUserIdCache = new LruCache<Integer, String>(LRU_CACHE_SIZE);
     }
 
     public static void Initialize(Context context) throws MalformedURLException {
@@ -46,6 +45,8 @@ public class AzureServiceAdapter {
     }
 
 // Place any public methods that operate on mClient here.
+
+
 }
 
 

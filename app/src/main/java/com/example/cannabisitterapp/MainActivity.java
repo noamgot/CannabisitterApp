@@ -3,6 +3,7 @@ package com.example.cannabisitterapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.LruCache;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -11,9 +12,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -23,33 +22,24 @@ import android.os.Build;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.MobileServiceException;
-import com.microsoft.windowsazure.mobileservices.http.NextServiceFilterCallback;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
-import com.microsoft.windowsazure.mobileservices.http.ServiceFilter;
-import com.microsoft.windowsazure.mobileservices.http.ServiceFilterRequest;
-import com.microsoft.windowsazure.mobileservices.http.ServiceFilterResponse;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
-import com.microsoft.windowsazure.mobileservices.table.sync.MobileServiceSyncContext;
-import com.microsoft.windowsazure.mobileservices.table.sync.localstore.ColumnDataType;
-import com.microsoft.windowsazure.mobileservices.table.sync.localstore.MobileServiceLocalStoreException;
-import com.microsoft.windowsazure.mobileservices.table.sync.localstore.SQLiteLocalStore;
-import com.microsoft.windowsazure.mobileservices.table.sync.synchandler.SimpleSyncHandler;
 import com.squareup.okhttp.OkHttpClient;
 
 
 public class MainActivity extends AppCompatActivity {
 
     public static int DUMMY_USERID = 1;
+    private static final int LRU_CACHE_SIZE = 256;
     public static final String PLANT_NAME_KEY = "com.example.cannabisitterapp.PLANT_NAME_KEY";
+    public static final String USER_ID_KEY = "com.example.cannabisitterapp.USER_ID_KEY";
+    public static final String PLANT_ID_KEY = "com.example.cannabisitterapp.PLANT_ID_KEY";
     private ProgressBar mSpinner;
 
     private int mUserId = DUMMY_USERID;
+    private boolean firstCacheUpdate = true;
 
     /**
      * Mobile Service Client reference
@@ -65,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
      * Adapter to sync the items list with the view
      */
     private PlantsPerUserItemAdapter mAdapter;
+
+    private MobileServiceTable<PlantItem> mPlantsTable;
+
+    private static LruCache<Integer, String> mPlantsIdCache;
+
 
     @Bind(R.id.add_plant_btn) Button mAddPlantBtn;
 
@@ -82,9 +77,6 @@ public class MainActivity extends AppCompatActivity {
             AzureServiceAdapter.Initialize(this);
             AzureServiceAdapter azureServiceAdapter = AzureServiceAdapter.getInstance();
             mClient = azureServiceAdapter.getClient();
-//            mClient = new MobileServiceClient(
-//                    "https://cannabisitterapp.azurewebsites.net",
-//                    this);//.withFilter(new ProgressFilter());
 
             // Extend timeout from default of 10s to 20s
             mClient.setAndroidHttpClientFactory(new OkHttpClientFactory() {
@@ -97,16 +89,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            mPlantsIdCache = new LruCache<Integer, String>(LRU_CACHE_SIZE);
+
             // Get the Mobile Service Table instance to use
             mPlantsPerUserTable = mClient.getTable("GHPlantsPerUser", PlantsPerUserItem.class);
+
+            mPlantsTable = mClient.getTable("GHPlants", PlantItem.class);
 
             // Offline Sync
             //mToDoTable = mClient.getSyncTable("ToDoItem", ToDoItem.class);
 
             //Init local storage
            // initLocalStore().get();
-
-            //mTextNewToDo = (EditText) findViewById(R.id.textNewToDo);
 
             mSpinner = (ProgressBar)findViewById(R.id.spinnerProgressBar);
 
@@ -117,23 +111,15 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     PlantsPerUserItem item = (PlantsPerUserItem) parent.getAdapter().getItem(position);
-                    // todo - fix this so it will pass a name and not a number!
-                    String plantName = Integer.toString(item.getPlantId());
+                    String plantName = getNameByPlantId(item.getPlantId());
                     Intent intent = new Intent(getApplicationContext(), PlantStatsActivity.class);
                     intent.putExtra(PLANT_NAME_KEY, plantName);
+                    intent.putExtra(USER_ID_KEY, mUserId);
+                    intent.putExtra(PLANT_ID_KEY, item.getPlantId());
                     startActivity(intent);
                 }
             });
             listViewPlantItem.setAdapter(mAdapter);
-
-//            if (mListView == null) {
-//                mListView = (ListView) findViewById(R.id.plantsList);
-//            }
-
-//            mAdapter = new ArrayAdapter<String>(this,
-//                    android.R.layout.simple_list_item_1,
-//                    mPlantsList);
-//            setListAdapter(mAdapter);
 
             // Load the items from the Mobile Service
             refreshItemsFromTable();
@@ -144,18 +130,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e){
             createAndShowDialog(e, "Error");
         }
-
-//        if (mListView == null) {
-//            mListView = (ListView) findViewById(R.id.plantsList);
-//        }
-//
-//        mAdapter=new ArrayAdapter<String>(this,
-//                android.R.layout.simple_list_item_1,
-//                mPlantsList);
-//        setListAdapter(mAdapter);
-
-
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //todo - uncomment this to enable login/sign-up!!!
 //        Intent intent = new Intent(this, LoginActivity.class);
@@ -172,6 +146,10 @@ public class MainActivity extends AppCompatActivity {
         refreshItemsFromTable();
     }
 
+    public static String getNameByPlantId(int plantId) {
+        return mPlantsIdCache.get(plantId);
+    }
+
     /**
      * Refresh the list with the items in the Table
      */
@@ -185,6 +163,15 @@ public class MainActivity extends AppCompatActivity {
             protected Void doInBackground(Void... params) {
 
                 try {
+                    if (firstCacheUpdate) {
+                        final List<PlantItem> PlantsTableFromDB = mPlantsTable.execute().get();
+                        for (PlantItem plant : PlantsTableFromDB) {
+                            mPlantsIdCache.put(plant.getPlantId(), plant.getPlantName());
+
+                        }
+                        firstCacheUpdate = false;
+                    }
+
                     final List<PlantsPerUserItem> results = refreshItemsFromMobileServiceTable();
 
                     //Offline Sync
@@ -224,53 +211,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void addPlant(View view) {
 
-        //todo - user approaval dialog - to be used somewhere...
-//        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                switch (which){
-//                    case DialogInterface.BUTTON_POSITIVE:
-//                        //Yes button clicked
-//                        break;
-//
-//                    case DialogInterface.BUTTON_NEGATIVE:
-//                        //No button clicked
-//                        break;
-//                }
-//            }
-//        };
-//
-//        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-//        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
-//                .setNegativeButton("No", dialogClickListener).show();
 
         Intent intent = new Intent(this, AddPlantActivity.class);
+        intent.putExtra(USER_ID_KEY, mUserId);
         startActivity(intent);
         //finish();
         overridePendingTransition(R.anim.push_left_in, R.anim.push_left_out);
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 
 
     /**
