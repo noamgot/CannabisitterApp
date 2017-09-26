@@ -1,13 +1,18 @@
 package com.example.cannabisitterapp;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.RuntimeExecutionException;
 import com.jjoe64.graphview.GraphView;
@@ -16,7 +21,6 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
-import com.microsoft.windowsazure.mobileservices.table.DateTimeOffset;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
 import com.microsoft.windowsazure.mobileservices.table.query.QueryOrder;
 import com.squareup.okhttp.OkHttpClient;
@@ -28,17 +32,20 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
 
-import static com.example.cannabisitterapp.R.id.temperatureGraph;
-
 public class PlantStatsActivity extends AppCompatActivity {
+
+    @Bind(R.id.delete_btn) Button mDeleteButton;
 
     private MobileServiceClient mClient;
 
     private MobileServiceTable<LogsPerUserItem> mStatsTable;
+    private MobileServiceTable<PlantsPerUserItem> mPlantsPerUserTable;
     private int mPlantId;
     private int mUserId;
+    private String mPlantUniqueId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +81,10 @@ public class PlantStatsActivity extends AppCompatActivity {
             throw new RuntimeExecutionException(new Throwable("Invalid Plant ID"));
         }
 
+        mPlantUniqueId = intent.getStringExtra(MainActivity.PLANT_UNIQUE_ID_KEY);
+
         mStatsTable = mClient.getTable("GHLogsPerUser", LogsPerUserItem.class);
+        mPlantsPerUserTable = mClient.getTable("GHPlantsPerUser", PlantsPerUserItem.class);
 
 
         fillGraphs();
@@ -194,12 +204,12 @@ public class PlantStatsActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
 
         cal.add(Calendar.DATE, -1);
-        Date yestarday = cal.getTime();
+        Date yesterday = cal.getTime();
         //DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
 
         List<LogsPerUserItem> lst =  mStatsTable.where().field("UserID").eq(mUserId).
                 and().field("PlantID").eq(mPlantId).
-                and().field("createdAt").ge(yestarday).
+                and().field("createdAt").ge(yesterday).
                 and().field("Humidity").le(1023).
                 and().field("Tempreture").lt(1000).
                 orderBy("createdAt", QueryOrder.Ascending).
@@ -261,5 +271,80 @@ public class PlantStatsActivity extends AppCompatActivity {
                 createAndShowDialog(exception, "Error");
             }
         });
+    }
+
+    public void deletePlant(View view) {
+
+        mDeleteButton.setEnabled(false);
+        final String plantName = MainActivity.getNameByPlantId(mPlantId);
+
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        // Insert the new item
+                        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
+                            ProgressDialog progressDialog = new ProgressDialog(PlantStatsActivity.this, R.style.AppTheme_Dark_Dialog);
+
+                            @Override
+                            protected void onPreExecute() {
+                                progressDialog.setIndeterminate(true);
+                                progressDialog.setMessage("Deleting plant...");
+                                progressDialog.show();
+                                super.onPreExecute();
+                            }
+
+                            @Override
+                            protected Void doInBackground(Void... params) {
+                                try {
+
+                                    mPlantsPerUserTable.delete(mPlantUniqueId);
+
+                                    // delete also all logs of that specific plant
+                                    List<LogsPerUserItem> plantLogs = mStatsTable.where().field("UserID").eq(mUserId).and().field("PlantID").eq(mPlantId).execute().get();
+                                    for (LogsPerUserItem log : plantLogs) {
+                                        mStatsTable.delete(log.getId());
+                                    }
+
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getBaseContext(), plantName + " was deleted successfully from your plants list", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    finish();
+                                } catch (final Exception e) {
+                                    createAndShowDialogFromTask(e, "Error");
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                mDeleteButton.setEnabled(true);
+                                progressDialog.dismiss();
+                                super.onPostExecute(aVoid);
+                            }
+                        };
+
+                        runAsyncTask(task);
+
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        break;
+                }
+            }
+        };
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(PlantStatsActivity.this);
+        builder.setTitle(plantName);
+        builder.setMessage("Are you sure you want to delete " + plantName + " from your plants list?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
     }
 }

@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.widget.Toast;
 
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
@@ -130,8 +131,7 @@ public class AddPlantActivity extends AppCompatActivity {
         item.setUserId(mUserId);
         item.setPlantId(mPlantId);
 
-
-
+        final String plantName = MainActivity.getNameByPlantId(mPlantId);
 
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -145,10 +145,24 @@ public class AddPlantActivity extends AppCompatActivity {
                             protected Void doInBackground(Void... params) {
                                 try {
                                     if (plantIsInList()){
-                                      //  throw new Exception("The plant is already in your list. Please choose a different plant");
+
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getBaseContext(), "This plant is already in your list.\nTry another plant", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+
 
                                     } else {
                                         addItemInTable(item);
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getBaseContext(), plantName + " was added successfully to your plants list", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                        AddPlantActivity.this.finish();
                                     }
                                 } catch (final Exception e) {
                                     createAndShowDialogFromTask(e, "Error");
@@ -158,7 +172,7 @@ public class AddPlantActivity extends AppCompatActivity {
                         };
 
                         runAsyncTask(task);
-                        AddPlantActivity.this.finish();
+
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:
@@ -168,7 +182,7 @@ public class AddPlantActivity extends AppCompatActivity {
             }
         };
 
-        String plantName = MainActivity.getNameByPlantId(mPlantId);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(AddPlantActivity.this);
         builder.setTitle(plantName);
         builder.setMessage("Would you like to add " + plantName + " to your plants list?").setPositiveButton("Yes", dialogClickListener)

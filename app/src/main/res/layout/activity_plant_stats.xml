@@ -44,7 +44,6 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="24dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
         android:text="Soil Moisture (%)"
         android:textColor="@color/black"
         android:textSize="18sp"
@@ -85,6 +84,21 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginRight="24dp"
         app:layout_constraintRight_toRightOf="parent"/>
+
+    <Button
+        android:id="@+id/delete_btn"
+        android:layout_width="95dp"
+        android:layout_height="37dp"
+        android:layout_marginRight="24dp"
+        android:background="@color/primary_dark"
+        android:text="DELETE"
+        android:onClick="deletePlant"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/plantNameTextView"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteX="241dp"/>
 
 
 </android.support.constraint.ConstraintLayout>

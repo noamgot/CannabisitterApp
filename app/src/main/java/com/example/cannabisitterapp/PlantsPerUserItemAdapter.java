@@ -56,7 +56,8 @@ public class PlantsPerUserItemAdapter extends ArrayAdapter<PlantsPerUserItem> {
         row.setTag(currentItem);
         final TextView textView = (TextView) row.findViewById(R.id.plantText);
         if (currentItem != null) {
-            textView.setText(String.valueOf(currentItem.getPlantId()));
+            //textView.setText(String.valueOf(currentItem.getPlantId()));
+            String s = MainActivity.getNameByPlantId(currentItem.getPlantId());
             textView.setText(MainActivity.getNameByPlantId(currentItem.getPlantId()));
         }
 

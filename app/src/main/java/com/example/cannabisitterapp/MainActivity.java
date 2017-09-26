@@ -1,5 +1,6 @@
 package com.example.cannabisitterapp;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.MobileServiceException;
@@ -31,12 +33,20 @@ import com.squareup.okhttp.OkHttpClient;
 
 public class MainActivity extends AppCompatActivity {
 
+
     public static int DUMMY_USERID = 1;
     private static final int LRU_CACHE_SIZE = 256;
     public static final String PLANT_NAME_KEY = "com.example.cannabisitterapp.PLANT_NAME_KEY";
+    public static final String NAME_KEY = "com.example.cannabisitterapp.NAME_KEY";
     public static final String USER_ID_KEY = "com.example.cannabisitterapp.USER_ID_KEY";
     public static final String PLANT_ID_KEY = "com.example.cannabisitterapp.PLANT_ID_KEY";
+    public static final String PLANT_UNIQUE_ID_KEY = "com.example.cannabisitterapp.PLANT_UNIQUE_ID_KEY";
+
     private ProgressBar mSpinner;
+
+    private static final int LOGIN_REQUEST_CODE = 0;
+
+    private boolean initialized = false;
 
     private int mUserId = DUMMY_USERID;
     private boolean firstCacheUpdate = true;
@@ -69,10 +79,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-
         try {
-            // Create the Mobile Service Client instance, using the provided
 
+
+            // Create the Mobile Service Client instance, using the provided
             // Mobile Service URL and key
             AzureServiceAdapter.Initialize(this);
             AzureServiceAdapter azureServiceAdapter = AzureServiceAdapter.getInstance();
@@ -96,12 +106,6 @@ public class MainActivity extends AppCompatActivity {
 
             mPlantsTable = mClient.getTable("GHPlants", PlantItem.class);
 
-            // Offline Sync
-            //mToDoTable = mClient.getSyncTable("ToDoItem", ToDoItem.class);
-
-            //Init local storage
-           // initLocalStore().get();
-
             mSpinner = (ProgressBar)findViewById(R.id.spinnerProgressBar);
 
             // Create an mAdapter to bind the items with the view
@@ -116,14 +120,11 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(PLANT_NAME_KEY, plantName);
                     intent.putExtra(USER_ID_KEY, mUserId);
                     intent.putExtra(PLANT_ID_KEY, item.getPlantId());
+                    intent.putExtra(PLANT_UNIQUE_ID_KEY, item.getId());
                     startActivity(intent);
                 }
             });
             listViewPlantItem.setAdapter(mAdapter);
-
-            // Load the items from the Mobile Service
-            refreshItemsFromTable();
-
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
@@ -132,8 +133,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //todo - uncomment this to enable login/sign-up!!!
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        startActivity(intent);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, LOGIN_REQUEST_CODE);
 
         // Login ended!
 
@@ -141,9 +142,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == LOGIN_REQUEST_CODE){
+            if (resultCode == Activity.RESULT_OK) {
+
+                try {
+                    mUserId = data.getIntExtra(USER_ID_KEY, -1);
+                    if (mUserId == -1) {
+                        throw new Exception("Invalid user ID");
+                    }
+                    String name = data.getStringExtra(NAME_KEY);
+
+                    TextView helloUserTextView = (TextView)findViewById(R.id.helloUserTextView);
+                    helloUserTextView.setText(String.format(getResources().getString(R.string.hello_user), name));
+
+                    // Load the items from the Mobile Service
+                    refreshItemsFromTable();
+                    initialized = true;
+
+
+                } catch (MalformedURLException e) {
+                    createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
+                } catch (Exception e){
+                    createAndShowDialog(e, "Error");
+                }
+
+
+            }
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        refreshItemsFromTable();
+        if (initialized) {
+            refreshItemsFromTable();
+        }
     }
 
     public static String getNameByPlantId(int plantId) {
@@ -312,6 +346,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void refreshPlantsList(View view) {
         refreshItemsFromTable();
+    }
+
+    public void signOut(View view) {
+        mUserId = -1;
+        initialized = false;
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, LOGIN_REQUEST_CODE);
     }
 
 //    private class ProgressFilter implements ServiceFilter {

@@ -8,6 +8,7 @@
     <string name="checkbox_text">Item Text</string>
 
     <string name="last_irrigation">Last Irrigation: \n%1$s</string>
+    <string name="hello_user">Hello %1$s!</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

@@ -1,4 +1,5 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,12 +19,36 @@
         android:layout_marginTop="16dp"
         android:src="@drawable/logo"/>
 
+    <TextView
+        android:id="@+id/helloUserTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/imageView"
+        android:layout_marginTop="10dp"
+        android:text="Hello!"
+        android:textColor="@color/primary_dark"
+        android:textSize="24sp"/>
+
+    <TextView
+        android:id="@+id/signOutTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentRight="true"
+        android:text="Sign Out"
+        android:onClick="signOut"
+        android:textSize="24sp"/>
+
     <ListView
         android:id="@+id/plantsList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView"
-        android:layout_marginTop="16dp"
+        android:layout_below="@+id/helloUserTextView"
+        android:layout_above="@+id/refresh_btn"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         tools:listitem="@layout/row_list_plant_item"
         android:padding="6dip"
         android:divider="@color/primary_dark"
@@ -63,6 +88,5 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="56dp"
         android:layout_marginBottom="7dp"/>
-
 
 </RelativeLayout>
